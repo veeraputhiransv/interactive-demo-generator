@@ -9,6 +9,7 @@ function App() {
   const [images, setImages] = useState([]);
   const [captions, setCaptions] = useState([]);
   const [demos, setDemos] = useState([]);
+  const [shareableLink, setShareableLink] = useState(""); // State to store the shareable link
 
   useEffect(() => {
     fetchDemos();
@@ -40,10 +41,15 @@ function App() {
     images.forEach((image) => formData.append("images", image));
     formData.append("captions", JSON.stringify(captions));
 
-    await fetch("http://localhost:5001/api/demos", {
+    const response = await fetch("http://localhost:5001/api/demos", {
       method: "POST",
       body: formData,
     });
+    const newDemo = await response.json();
+
+    // Generate the shareable link
+    const demoLink = `http://localhost:3000/demo/${newDemo.id}`;
+    setShareableLink(demoLink);
 
     alert("Demo successfully exported!");
     fetchDemos(); // Refresh the demo list after export
@@ -68,6 +74,17 @@ function App() {
           <ExportDemo onExport={handleDemoExport} />
         </>
       )}
+
+      {/* Display the shareable link if available */}
+      {shareableLink && (
+        <div>
+          <h3>Your Shareable Demo Link:</h3>
+          <a href={shareableLink} target="_blank" rel="noopener noreferrer">
+            {shareableLink}
+          </a>
+        </div>
+      )}
+
       <h2>Existing Demos</h2>
       {demos.map((demo) => (
         <div key={demo.id}>
